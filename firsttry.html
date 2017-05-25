@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<svg width="1000" height="800"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height"),
+    angles = d3.range(0, 2 * Math.PI, Math.PI / 200);
+svg.append("rect").attr("width", "100%").attr("height", "100%").attr("fill", "#222")
+var path = svg.append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+    .attr("fill", "none")
+    .attr("stroke-width", 10)
+    .attr("stroke-linejoin", "round")
+var path_adapt = path.selectAll("path")
+  .data(["cyan", "magenta"])
+  .enter().append("path")
+    .attr("stroke", function(d) { return d; })
+    .style("mix-blend-mode", "lighten")
+    .datum(function(d, i) {
+      return d3.radialLine()
+          .curve(d3.curveLinearClosed)
+          .angle(function(a) { return a; })
+          .radius(function(a) {
+            var t = d3.now() / 6000;
+            return 300 + Math.cos(a * 8 - i * Math.PI + t) * Math.pow((1 + Math.cos(a - t)) / 2, 25) * 32;
+          });
+    });
+
+d3.timer(function() {
+  path_adapt.attr("d", function(d) {
+    return d(angles);
+  });
+  path.selectAll("circle").remove()
+  path.append("circle")
+    .style("fill", "yellow")
+    .style("mix-blend-mode", "lighten")
+    .attr("r", 15)
+    .attr("cx", function(){
+      var t = (d3.now()-5500)/(6000);
+      return 300 * Math.cos(t)
+    }).attr("cy", function(){
+      var t = (d3.now()-5500)/(6000);
+      return 300 * Math.sin(t)
+    })
+
+});
+</script>
+<br>
+<i>Adapted from <a href="https://bl.ocks.org/mbostock/2d466ec3417722e3568cd83fc35338e3">a creation</a> by Mike Bostock</i> | GNU GPL License
