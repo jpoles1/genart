@@ -1,0 +1,110 @@
+<html>
+  <head>
+    <title>Alone in the Gene Pool</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="litemodal.js"></script>
+    <style>
+      a{
+        color: white;
+      }
+    </style>
+  </head>
+  <body style="background-color: #222; text-align: center; font-family: arial; color: #fff; padding: 20px;">
+    <h1 style="margin-bottom: 5px;">Alone in the Gene Pool</h1>
+    <div id="notes" class="lite-modal" style="background-color: #222; padding: 30px; border-radius: 5px; max-width: 800px;">
+      <h1>Notes from the Creator</h1>
+      <p>
+        This piece is my first attempt at the creation of a procedurally generated work of art.
+        It was inspired by my intersecting interests in programming, biology, invention, and philosophy.
+        I depict, in simplistic imagery, the process of DNA unwinding by the action of DNA helicase.
+        The two opposing strands of DNA are torn apart; the hydrogen bonds holding them together are broken.
+      </p>
+      <p>
+        If you asked a biologist, they'd tell this is likely the genetic material of a bacteria, given it is circular.
+        The helicase enzyme unwinds the DNA in order to access the information it encodes.
+        Yet, the ring of DNA never seems to successfully produce any copies.
+        It instead diminishes into nothingness.
+      </p>
+      <p>
+        The work is a derivative of a <a href="https://bl.ocks.org/mbostock/2d466ec3417722e3568cd83fc35338e3">creation</a> by Mike Bostock</i>, licensed under GNU GPL3.
+        It utilizes basic web technologies like HTML and Javascript, in conjunction with the D3.js library, in order to display the animation in almost any browser.
+
+      </p>
+    </div>
+    <a href="#" id="opennotes"><i><sup>Notes from the creator</sup></i></a>
+    <br>
+    <svg width="1000" height="700"></svg>
+    <br>
+    <i>Adapted from a <a href="https://bl.ocks.org/mbostock/2d466ec3417722e3568cd83fc35338e3">creation</a> by Mike Bostock</i> | GNU GPL License
+    <script>
+    var speed_control = 1000;
+    var helicase_offset = 200;
+    var start = d3.now();
+    var plasmid_size = 300;
+    var scale = 1;
+    var svg = d3.select("svg"),
+        width = +svg.attr("width"),
+        height = +svg.attr("height"),
+        angles = d3.range(0, 2 * Math.PI, Math.PI / 200);
+    svg.append("rect").attr("width", "100%").attr("height", "100%").attr("fill", "#222")
+    var artcanvas = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+    make_plasmid = function(c){
+      var path = c.append("g")
+          .attr("fill", "none")
+          .attr("stroke-width", 10)
+          .attr("stroke-linejoin", "round")
+      var path_adapt = path.selectAll("path")
+        .data(["cyan", "magenta"])
+        .enter().append("path")
+          .attr("stroke", function(d) { return d; })
+          .style("mix-blend-mode", "lighten")
+          .datum(function(d, i) {
+            return d3.radialLine()
+                .curve(d3.curveLinearClosed)
+                .angle(function(a) { return a; })
+                .radius(function(a) {
+                  var t = d3.now() / speed_control;
+                  return plasmid_size + Math.cos(a * 8 - i * Math.PI + t) * Math.pow((1 + Math.cos(a - t)) / 2, 25) * 32;
+                });
+          });
+      return [path, path_adapt]
+    }
+    var plasmids = [make_plasmid(artcanvas)]
+    d3.timer(function() {
+      artcanvas.selectAll().remove()
+      if((d3.now()-start)>6000){
+        start = d3.now()
+        console.log("Divide!")
+        //plasmid_size = plasmid_size/2
+        scale = scale*.75
+        //scale = scale*Math.pow(.6, scale)
+        for(plasmid in plasmids){
+          plasmid = plasmids[plasmid]
+          plasmid[0].transition().ease(d3.easeSin)
+            .duration(4000)
+            .attr("transform", "scale("+scale+")")
+        }
+      }
+      for(plasmid in plasmids){
+        plasmid = plasmids[plasmid]
+        plasmid[1].attr("d", function(d) {
+          return d(angles);
+        });
+        plasmid[0].selectAll("circle").remove()
+        plasmid[0].append("circle")
+          .style("fill", "yellow")
+          .style("mix-blend-mode", "lighten")
+          .attr("r", 20)
+          .attr("cx", function(){
+            var t = (d3.now()-speed_control+helicase_offset)/(speed_control);
+            return plasmid_size * Math.cos(t)
+          }).attr("cy", function(){
+            var t = (d3.now()-speed_control+helicase_offset)/(speed_control);
+            return plasmid_size * Math.sin(t)
+          })
+      }
+    });
+    </script>
+    <script src="desc.js"></script>
+  </body>
+</html>
